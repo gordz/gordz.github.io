@@ -36,6 +36,36 @@
         		}
          	}
         	
+        	function AAEmplacement(position) {
+        		var coords = position;
+        		var spawned = new Date();
+        		var rateOfFire = 3;
+        		var lastFire = spawned.getTime();
+        		
+        		this.updatePosition = function(time) {
+        			if (time - lastFire > randomInteger(400,800)) {
+        				lastFire = time;
+        				var target = {x: randomInteger(0, canvas.width), y: randomInteger(200, 400)};
+        				this.fireAABullet(target);
+        			}
+        		}
+        		
+        		this.fireAABullet = function(coordinate) {
+            		var x = coordinate.x;
+            		var y = coordinate.y;
+            		
+            		
+        			console.log("Firing AA to position: x = " + x + ", y = " + y);
+            		context.beginPath();
+            		context.moveTo(500, 1000);
+            		context.lineTo(x, y);
+            		context.stroke();
+            		
+            		// Draw explosion
+            		explosions.push(new Explosion({x: x, y: y}, 20));
+            	}
+        		
+        	}
         	
         
         	var drawGrid = function(strokeStyle) {
@@ -119,9 +149,6 @@
         	
         	
         	var drawRandomJagged = function(minX, minY, maxX, maxY) {
-        		//this.strokeStyle = "blue";
-        		///this.beginPath();
-        		
         		var points = Math.floor(10 + (Math.random() * 10));
         		
         		//this.moveTo(0, 300);
@@ -131,7 +158,6 @@
         			var randY = minY + Math.floor(((maxY - minY) * Math.random()));
         			randomPoints.push({x: randX, y: randY});
         		}    		
-        		console.log(randomPoints);
         	}
    
         	// Draw a 3 colour flag.
@@ -153,8 +179,6 @@
         	// Get a CanvasRenderingContext2D.
         	var context = canvas.getContext("2d");
 
-        	drawSky(context);
-        	drawGround(context);
         	
         	// Draw a rectangle.
         	//context.fillStyle = "black";
@@ -179,12 +203,12 @@
         		context.stroke();
         		
         		// Draw explosion
-        		explosions.push(new Explosion({x: x, y: y}));
+        		explosions.push(new Explosion({x: x, y: y}, 60));
         	}
 
-        	function Explosion(centre) {
+        	function Explosion(centre, maxRadius) {
         		var speed = 50;
-        		var maxRadius = 60;
+        		this.maxRadius = maxRadius;
         		var centre = centre;
         		var startTime = new Date().getTime();
         		var radius = 0;
@@ -196,6 +220,13 @@
         			//console.log("Time: " + time + ", elapsed: " + elapsed);;
         			if (radius < maxRadius) {
         				radius = speed * (elapsed / 1000)
+        				context.globalCompositeOperation = "source-over";
+        				
+        				var rg = context.createRadialGradient (centre.x, centre.y, 10, centre.x, centre.y, maxRadius);
+        				rg.addColorStop (0, 'yellow');
+        				rg.addColorStop (1, 'red');
+        				context.fillStyle = rg;
+
         				context.beginPath();
         				context.arc(centre.x, centre.y, radius, 0, 2 * Math.PI, true);
         				context.closePath();
@@ -224,29 +255,24 @@
         			return alive;
         		}
         	}
-        	
-        	
-        	
-        	//var boundDrawFlag = drawFlag.bind(context);
-        	//drawFlag.call(context, 1, 9, "red", "green", "yellow");
-        	
-    
-        	//context.drawGrid = drawGrid;
-        	//context.drawGrid("black");
-        	        	
-        	//context.drawGrid("black");
 
-  var rg = context.createRadialGradient (80, 80, 20, 120, 120, 110);
-  // 2. add colors
-  rg.addColorStop (0, 'yellow');
-  rg.addColorStop (1, 'red');
-  // 3. set the fill style to the new gradient
-  context.fillStyle = rg;
-  // 4. now draw some filled objects; in this case just a circle
-  context.beginPath();
-  context.arc (120,120,110,0,2*Math.PI,false);
-  context.fill();
-  context.closePath();
+
+        	
+        	
+  function drawSun() {
+	  var rg = context.createRadialGradient (80, 80, 20, 120, 120, 110);
+	  // 2. add colors
+	  rg.addColorStop (0, 'yellow');
+	  rg.addColorStop (1, 'red');
+	  // 3. set the fill style to the new gradient
+	  context.fillStyle = rg;
+	  // 4. now draw some filled objects; in this case just a circle
+	  context.beginPath();
+	  context.arc (120,120,110,0,2*Math.PI,false);
+	  context.fill();
+	  context.closePath();
+  }      	
+
   
   // Shim -> get function responsible for animation.
   var requestAnimationFrame = window.requestAnimationFrame ||
@@ -324,13 +350,42 @@
  	  };
   }
   
+  function Emp(startCoord) {
+	  
+	  var spawned = new Date();
+	  var speed = 700;
+	  var alive = true;
+	  var centre = startCoord;
+	  var radius = 0;
+	  
+	  this.updatePosition = function(time) {
+		  if (alive) {
+		  	this.radius = speed * ((time - spawned.getTime()) / 1000);
+		  	context.beginPath();
+		  	context.arc(startCoord.x, startCoord.y, this.radius, 0, 2 * Math.PI, true);
+		  	context.stroke();
+		  }
+		  
+	  }
+	  
+	  this.hasCollided = function(missile) {
+	  	if (alive) {
+        		var missilePosition = missile.currentPosition;
+        		var distanceToMissile = Trig.hypot((missilePosition.x - centre.x), (missilePosition.y - centre.y));
+        		if (distanceToMissile <= this.radius) {
+        			return true;
+        		}
+	  	}
+	}
+  	}
+  
   function Missile(startCoord) {
 	  var startCoord = {x: startCoord.x, y: startCoord.y};
 	  var endCoord = {x: randomInteger(0, context.canvas.width), y: context.canvas.height};
 	  var rAngle = Math.atan(Math.abs(startCoord.x - endCoord.x) / (startCoord.y - context.canvas.height));	  
 	  this.currentPosition = {x: startCoord.x, y: startCoord.y};
  	  var distance = 0;
- 	  var speed = randomInteger(20,60);
+ 	  var speed = randomInteger(50,90);
  	  var alive = true;
  	  var spawned = new Date().getTime();
  	
@@ -362,11 +417,16 @@
   }
   
   
-  
-  var hypot = 0;
-  
-  
-  var startTime;
+ 
+/*  var emps = []
+  for (i = 0; i < 1; i++) {
+	  emps.push(new Emp({x: 500, y: 700}));
+  }
+  */
+  var aaEmplacements = [];
+  for (i = 0; i < 2 ; i++) {
+	  aaEmplacements.push(new AAEmplacement({x: 300, y:800}));
+  }
   
   
   var missiles = [];
@@ -378,6 +438,17 @@
 	  missiles.push(new Mirv({x: randomInteger(0, context.canvas.width), y: 0}));
   }
 
+  // TODO implement with underscore.js.
+  /*
+  function filter(array, predicate) {
+	  var result = [];
+	  array.forEach(function(element) {
+
+	  });
+  }
+  */
+  
+  
   function detectCollissions(explosions, missiles, bases) {
 	  missiles.forEach(function (missile) {
 		  explosions.forEach(function (explosion) {
@@ -385,29 +456,25 @@
 					 missile.destroy();
 		      }
 		  });
+		  /*
+		  emps.forEach(function(emp) {
+			 if (emp.hasCollided(missile)) {
+				 missile.destroy();
+			 } 
+		  });
+		  */
 	  });
   }
   
-  var stop = false;
-  
+  var startTime;
   function draw(time) {
+	  
+	  context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+	  drawBackground();
 	  
 	  if (!startTime) {
 		  startTime = time;
 	  }
-	  
-	  if (!lastDraw) {
-		  lastDraw = time;
-	  }
-	  var elapsed = time - startTime;
-	  
-	 // hypot += 0.5;
-	  
-	  //var arcTan0 = Math.atan(tan0);
-	 // var newX = hypot * Math.sin(arcTan0);
-	 // var newY = hypot * Math.cos(arcTan0);
-	 // console.log("newX:" + newX + ", newY: " + newY);
-	  //strokeTriangle({x: 0, y:0}, {x: newX, y: 0}, {x: newX, y: newY});
 	  
 	  missiles.forEach(function(missile) {
 		  missile.updatePosition(time);
@@ -416,15 +483,40 @@
 	  explosions.forEach(function(explosion) {
 		  explosion.updatePosition(time);
 	  });
+	  
+	  aaEmplacements.forEach(function(aaEmplacement) {
+		  aaEmplacement.updatePosition(time);
+	  })
 
+	  /*
+	  emps.forEach(function(emp) {
+		emp.updatePosition(time);  
+	  });
+	  */
+	  
 	  detectCollissions(explosions, missiles);
 	  
-	  lastDraw = time;
       requestAnimationFrame(draw);
   }
   
   requestAnimationFrame(draw);
   
+ 
+ var background;
+ 
+ function drawBackground() {
+	 if (background != null || background != undefined) {
+		 context.putImageData(background, 0, 0, context.canvas.width, context.canvas.height);
+	 } else {
+		 drawSky(context);
+		 drawGround(context);
+		 drawSun();
+	 	 background = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
+	 }
+
+	 	 
+ }
+
         </script>
         <footer>Footer section</footer>
     </body>
