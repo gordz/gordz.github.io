@@ -3,9 +3,9 @@
     <head>
         <title>Start Page</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <script type="text/javascript" src="js/Trig.js"></script>
-        <script type="text/javascript" src="js/Shapes.js"></script>
-        <script type="text/javascript" src="js/GameObjects.js"></script>
+        <script type="text/javascript" src="js/trig.js"></script>
+        <script type="text/javascript" src="js/shapes.js"></script>
+        <script type="text/javascript" src="js/gameObjects.js"></script>
     </head>
     <body>
     	<header><h1>Header section</h1></header>
@@ -20,7 +20,7 @@
         		
         		// Draw y axis.
         		this.beginPath();
-        		for (i = 0; i < canvas.width / spacing; i++) {
+        		for (var i = 0; i < canvas.width / spacing; i++) {
         			// Move drawing cursor to x,y.
         			this.moveTo(0 + (i * spacing), 0);
         			// Draw line to x, y
@@ -28,7 +28,7 @@
         		}
         		
         		// Draw x axis
-        		for (i = 0; i < canvas.height / spacing; i++) {
+        		for (var i = 0; i < canvas.height / spacing; i++) {
         			// Move drawing cursor to x,y.
         			this.moveTo(0, 0 + (i * spacing));
         			// Draw line to x, y
@@ -197,98 +197,21 @@
   }
   */
   var aaEmplacements = [];
-  for (i = 0; i < 2 ; i++) {
+  for (var i = 0; i < 2 ; i++) {
 	  aaEmplacements.push(new AAEmplacement({x: 300, y:800}));
   }
   
   
   var missiles = [];
-  for (i = 0; i < 5; i++) {
+  for (var i = 0; i < 5; i++) {
 	  missiles.push(new Missile({x: randomInteger(0, context.canvas.width), y: 0}));
   }
   
-  for (i = 0; i < 5; i++) {
+  for (var i = 0; i < 5; i++) {
 	  missiles.push(new Mirv({x: randomInteger(0, context.canvas.width), y: 0}));
   }
 
-  // TODO implement with underscore.js.
-  function filter(array, predicate) {
-	 //console.log("inside filter");
-	  var result = [];
-	  array.forEach(function(element) {
-		var found = true;
-		  for (property in predicate) {
-			 // console.log("Comparing property: " + property);
-			 // console.log("Element property: " + element[property]);
-			  //console.log("Predicate property: " + predicate[property]);
-			  var propertyValue;
-			  
-			  if (element[property] instanceof Function) {
-				  propertyValue = element[property].call(element);
-			  } else {
-				  propertyValue = element[property];
-			  } 
-			  
-			  if ( propertyValue !== predicate[property]) {
-				found = false;
-	  		  }
-		}
-		if (found) {
-			result.push(element);
-		}  
-	  });
-	  return result;
-  }
-  
-  
-  function SmallBullet(start, end) {
-	  console.log("Start:" + start + ", end: " + end);
-	var speed = 300;
-	var origin = start;
-	var position = origin;
-	var target = end;
-	var spawned = new Date();
-	var rAngle = Math.abs(Math.atan((origin.x - target.x) / (origin.y - target.y)));	 
-	var alive = true;
-	
-	// Determine speed & direction
-	if (start.x > end.x) {
-		speed = -speed;
-	}
-	
-	this.updatePosition = function(time) {
- 		  if (alive) {
- 		 	distance = ((time - spawned.getTime()) / 1000) * speed;
- 	  	  	var xDisplacement = distance * Math.sin(rAngle);
- 	  	  	var yDisplacement = Math.abs(distance) * Math.cos(rAngle);
- 	  	 	
- 	  	  	if (speed < 0) {
- 	  	  		this.position = {x: Math.max(origin.x + xDisplacement, target.x), y: Math.max(origin.y - yDisplacement, target.y)};
- 	  	  	} else {
- 	  	  		this.position = {x: Math.min(origin.x + xDisplacement, target.x), y: Math.max(origin.y - yDisplacement, target.y)};
- 	  	  	}
- 	  	 
- 	 	  	context.beginPath();
- 	 	  	context.arc(this.position.x, this.position.y, 3, 0, 2 * Math.PI, true);
- 	 	  	context.fill();	 
- 	 	  	
- 	 	  	if (this.position.x == target.x && this.position.y == target.y) {
- 	 	  		explosions.push(new Explosion(this.position, 60));
- 	 	  		this.destroy();
- 	 	  	}
- 	 	  }
- 	  }
-	
-	this.destroy = function() {
-		alive = false;
-	};
-	
-	this.isAlive = function() {
-		return alive;
-	};
-  }
-  
-  
+
   function detectCollissions(explosions, missiles, bases) {
 	  missiles.forEach(function (missile) {
 		  explosions.forEach(function (explosion) {
@@ -391,9 +314,7 @@
 		 drawGround(context);
 		 drawSun();
 	 	 background = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
-	 }
-
-	 	 
+	 } 	 
  }
 
         </script>
