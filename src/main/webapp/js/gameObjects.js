@@ -89,15 +89,15 @@ function Missile(startCoord) {
 }
 
 Missile.prototype.updatePosition = function(time) {
-	if (this.alive) { 			  
+	if (this.alive) { 
 		 var distance = ((time - this.spawned.getTime()) / 1000) * this.speed;
 	  	 var xDisplacement = distance * Math.sin(this.rAngle);
-	  	 var yDisplacement = Math.abs(distance) * Math.cos(this._rAngle);
+	  	 var yDisplacement = Math.abs(distance) * Math.cos(this.rAngle);
 	  	 this.currentPosition = {x: this.startCoord.x + xDisplacement, y: this.startCoord.y + yDisplacement};
 	  	  	
 	  	 context.beginPath();
 	  	 context.lineWidth = 3;
-	  	 context.moveTo(this.startCoord.x, this.startCoord.y);
+	  	 context.moveTo(this.startCoord.x, this.startCoord.y)
 	  	 context.lineTo(this.currentPosition.x, this.currentPosition.y);
 	  	 context.stroke();
 	  	 context.closePath();
