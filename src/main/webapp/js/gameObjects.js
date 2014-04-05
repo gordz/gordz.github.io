@@ -27,27 +27,27 @@ AAEmplacement.prototype.fireAABullet = function(coordinate) {
 };
 
 function Explosion(position, maxRadius) {
-	this._maxRadius = maxRadius;
-	this._spawned = new Date();
-	this._radius = 0;
-	this._alive = true;
-	this._position = position;
-	this._speed = 50;
+	this.maxRadius = maxRadius;
+	this.spawned = new Date();
+	this.radius = 0;
+	this.alive = true;
+	this.position = position;
+	this.speed = 50;
 };
 
 Explosion.prototype.updatePosition = function(time) {
-	var elapsed = time - this._spawned.getTime();
+	var elapsed = time - this.spawned.getTime();
 	//console.log("Time: " + time + ", elapsed: " + elapsed);;
-	if (this._radius < this._maxRadius) {
-		this._radius = this._speed * (elapsed / 1000);
+	if (this.radius < this.maxRadius) {
+		this.radius = this.speed * (elapsed / 1000);
 		context.globalCompositeOperation = "source-over";
 		
-		var rg = context.createRadialGradient (this._position.x, this._position.y, 10, this._position.x, this._position.y, this._maxRadius);
+		var rg = context.createRadialGradient (this.position.x, this.position.y, 10, this.position.x, this.position.y, this.maxRadius);
 		rg.addColorStop (0, 'yellow');
 		rg.addColorStop (1, 'red');
 		context.fillStyle = rg;
 		context.beginPath();
-		context.arc(this._position.x, this._position.y, this._radius, 0, 2 * Math.PI, true);
+		context.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, true);
 		context.fill();
 	} else {
 		this.destroy();
@@ -55,18 +55,18 @@ Explosion.prototype.updatePosition = function(time) {
 };
 
 Explosion.prototype.isAlive = function() {
-	return this._alive;
+	return this.alive;
 };
 
 Explosion.prototype.destroy = function() {
-	this._alive = false;
+	this.alive = false;
 };
 
 Explosion.prototype.hasCollided = function(missile) {
-	if (this._alive) {
+	if (this.alive) {
 		var missilePosition = missile.currentPosition;
-		var distanceToMissile = Trig.hypot((missilePosition.x - this._position.x), (missilePosition.y - this._position.y));
-		if (distanceToMissile <= this._radius) {
+		var distanceToMissile = Trig.hypot((missilePosition.x - this.position.x), (missilePosition.y - this.position.y));
+		if (distanceToMissile <= this.radius) {
 			return true;
 		}
 	}
@@ -74,46 +74,44 @@ Explosion.prototype.hasCollided = function(missile) {
 
 
 function Missile(startCoord) {
-	  var startCoord = {x: startCoord.x, y: startCoord.y};
-	  var endCoord = {x: randomInteger(0, context.canvas.width), y: context.canvas.height};
-	  var rAngle = Math.abs(Math.atan((startCoord.x - endCoord.x) / (startCoord.y - context.canvas.height)));	  
+	  this.startCoord = {x: startCoord.x, y: startCoord.y};
+	  this.endCoord = {x: randomInteger(0, context.canvas.width), y: context.canvas.height};
+	  this.rAngle = Math.abs(Math.atan((startCoord.x - this.endCoord.x) / (startCoord.y - context.canvas.height)));	  
 	  this.currentPosition = {x: startCoord.x, y: startCoord.y};
-	  var distance = 0;
-	  var speed = randomInteger(30,90);
-	  var alive = true;
-	  var spawned = new Date();
+	  this.speed = randomInteger(30,90);
+	  this.alive = true;
+	  this.spawned = new Date();
 
 	  // Determine speed & direction
-	  if (startCoord.x > endCoord.x) {
-		  speed = -speed;
+	  if (startCoord.x > this.endCoord.x) {
+		  this.speed = -this.speed;
 	  }
-	  
-	  
-	  this.updatePosition = function(time) {
-		  if (alive) { 			  
-		 	distance = ((time - spawned.getTime()) / 1000) * speed;
-	  	  	var xDisplacement = distance * Math.sin(rAngle);
-	  	  	var yDisplacement = Math.abs(distance) * Math.cos(rAngle);
-	  	 	this.currentPosition = {x: startCoord.x + xDisplacement, y: startCoord.y + yDisplacement};
-	  	  	
-	  	  	context.beginPath();
-	  	  	context.lineWidth = 3;
-	  	  	context.moveTo(startCoord.x, startCoord.y);
-	  	  	context.lineTo(this.currentPosition.x, this.currentPosition.y);
-	  	  	context.stroke();
-	  	  	context.closePath();
-		 }
-	  };
-	  
-	  this.destroy = function() {
-		  alive = false;
-		  explosions.push(new Explosion({x: this.currentPosition.x, y: this.currentPosition.y}, 60));
-	  };
-	  
-	  this.isAlive = function() {
-		  return alive;
-	  };
 }
+
+Missile.prototype.updatePosition = function(time) {
+	if (this.alive) { 			  
+		 var distance = ((time - this.spawned.getTime()) / 1000) * this.speed;
+	  	 var xDisplacement = distance * Math.sin(this.rAngle);
+	  	 var yDisplacement = Math.abs(distance) * Math.cos(this._rAngle);
+	  	 this.currentPosition = {x: this.startCoord.x + xDisplacement, y: this.startCoord.y + yDisplacement};
+	  	  	
+	  	 context.beginPath();
+	  	 context.lineWidth = 3;
+	  	 context.moveTo(this.startCoord.x, this.startCoord.y);
+	  	 context.lineTo(this.currentPosition.x, this.currentPosition.y);
+	  	 context.stroke();
+	  	 context.closePath();
+	}
+};
+
+Missile.prototype.destroy = function() {
+	this.alive = false;
+	explosions.push(new Explosion({x: this.currentPosition.x, y: this.currentPosition.y}, 60));
+};
+
+Missile.prototype.isAlive = function() {
+	return this.alive;
+};
 
 function Mirv(startCoord) {
 	  var startCoord = {x: startCoord.x, y: startCoord.y};
@@ -171,7 +169,7 @@ function SmallBullet(start, end) {
 	var target = end;
 	var spawned = new Date();
 	var rAngle = Math.abs(Math.atan((origin.x - target.x) / (origin.y - target.y)));	 
-	this._alive = true;
+	this.alive = true;
 	
 	// Determine speed & direction
 	if (start.x > end.x) {
@@ -179,7 +177,7 @@ function SmallBullet(start, end) {
 	}
 	
 	this.updatePosition = function(time) {
-		  if (this._alive) {
+		  if (this.alive) {
 		 	distance = ((time - spawned.getTime()) / 1000) * speed;
 	  	  	var xDisplacement = distance * Math.sin(rAngle);
 	  	  	var yDisplacement = Math.abs(distance) * Math.cos(rAngle);
@@ -203,9 +201,10 @@ function SmallBullet(start, end) {
 }
 
 SmallBullet.prototype.destroy = function() {
-	this._alive = false;
+	this.alive = false;
 };
 
-SmallBuller.prototype.isAlive = function() {
-	return this._alive;
-}
+SmallBullet.prototype.isAlive = function() {
+	return this.alive;
+};
+
