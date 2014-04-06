@@ -3,9 +3,9 @@
     <head>
         <title>Start Page</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <script type="text/javascript" src="js/trig.js"></script>
-        <script type="text/javascript" src="js/shapes.js"></script>
-        <script type="text/javascript" src="js/gameObjects.js"></script>
+        <script src="js/trig.js"></script>
+        <script src="js/shapes.js"></script>
+        <script src="js/gameObjects.js"></script>
     </head>
     <body>
     	<header><h1>Header section</h1></header>
@@ -41,33 +41,8 @@
         	
         	function randomInteger(min, max) {
         		return min + Math.floor((max - min) * Math.random());
-        	}
+        	};
 
-        	function drawGround() {
-        		// Fill with a gradient.
-        		var gradient = context.createLinearGradient(0, 700, context.canvas.width, context.canvas.height);
-        		gradient.addColorStop(0, '#009900')
-        		gradient.addColorStop(0.25, '#336600');
-        		gradient.addColorStop(0.50, '#7A5229');
-        		gradient.addColorStop(0.75,'#493119');
-   				context.fillStyle = gradient;
-        		context.fillRect(0, 700, context.canvas.width, context.canvas.height);
-        	}
-        	
-        	
-        	function drawSky(context) {
-        		context.fillStyle = "#0099FF";	//sky blue.
-        		context.fillRect(0, 0, context.canvas.width, context.canvas.height);
-        	}
-        	
-        	/*
-        	function drawGround(context) {
-        		drawHorizontalRandomJagged(context, 600, 940, 40, 50);
-        	}
-        	*/
-        	
-      		
-        	
    
         	// Draw a 3 colour flag.
         	var drawFlag = function(x, y, colour1, colour2, colour3) {
@@ -99,23 +74,6 @@
         	
         	
         	var explosions = [];
-        	
-        	function fireBullet(event) {
-        		var x = event.clientX - canvas.offsetLeft;
-        		var y = event.clientY - canvas.offsetTop;
-        		
-        	    y += document.documentElement.scrollTop;
-        	    
-        		context.beginPath();
-        		context.moveTo(0, 400);
-        		context.lineTo(x, y);
-        		context.stroke();
-        		
-        		// Draw explosion
-        		explosions.push(new Explosion({x: x, y: y}, 60));
-        	}
-
-        	
         	var bullets = [];
         	
         	function fireSmallBullet(event) {
@@ -124,22 +82,10 @@
         		
         	    y += document.documentElement.scrollTop;
         	    
-        	    bullets.push(new SmallBullet({x: 500, y: 700}, {x: x, y: y}));
-        	}
+        	    bullets.push(new SmallBullet({x: context.canvas.width / 2, y: 680}, {x: x, y: y}));
+        	};
    	
-  function drawSun() {
-	  var rg = context.createRadialGradient (80, 80, 20, 120, 120, 110);
-	  // 2. add colors
-	  rg.addColorStop (0, 'yellow');
-	  rg.addColorStop (1, 'red');
-	  // 3. set the fill style to the new gradient
-	  context.fillStyle = rg;
-	  // 4. now draw some filled objects; in this case just a circle
-	  context.beginPath();
-	  context.arc (120,120,110,0,2*Math.PI,false);
-	  context.fill();
-	  context.closePath();
-  }      	
+
 
   
   // Shim -> get function responsible for animation.
@@ -160,36 +106,6 @@
   
   
   var totalDistance = 0;
-
-  function Emp(startCoord) {
-	  
-	  var spawned = new Date();
-	  var speed = 700;
-	  var alive = true;
-	  var centre = startCoord;
-	  var radius = 0;
-	  
-	  this.updatePosition = function(time) {
-		  if (alive) {
-		  	this.radius = speed * ((time - spawned.getTime()) / 1000);
-		  	context.beginPath();
-		  	context.arc(startCoord.x, startCoord.y, this.radius, 0, 2 * Math.PI, true);
-		  	context.stroke();
-		  }
-		  
-	  }
-	  
-	  this.hasCollided = function(missile) {
-	  	if (alive) {
-        		var missilePosition = missile.currentPosition;
-        		var distanceToMissile = Trig.hypot((missilePosition.x - centre.x), (missilePosition.y - centre.y));
-        		if (distanceToMissile <= this.radius) {
-        			return true;
-        		}
-	  	}
-	}
-  	}
-  
  
 /*  var emps = []
   for (i = 0; i < 1; i++) {
@@ -207,16 +123,21 @@
 	  missiles.push(new Missile({x: randomInteger(0, context.canvas.width), y: 0}));
   }
   
-  for (var i = 0; i < 0; i++) {
+  for (var i = 0; i < 2; i++) {
 	  missiles.push(new Mirv({x: randomInteger(0, context.canvas.width), y: 0}));
   }
-
-
+  
+  var jets = [];
+  for (var i = 0; i < 2; i++) {
+	  jets.push(new Jet({x: context.canvas.width + randomInteger(100, 500), y: randomInteger(100, 300)}));
+  }
+  
   function detectCollissions(explosions, missiles, bases) {
 	  missiles.forEach(function (missile) {
 		  explosions.forEach(function (explosion) {
 			  if (explosion.hasCollided(missile)) {
 					 missile.destroy();
+					 score += 10;
 		      }
 		  });
 		  
@@ -236,13 +157,24 @@
   
   var startTime;
   var animate = true;
+  var score = 0;
   
+
+  var jetBullets = [];
+  
+  var background = new Background();
+  var base = new Base();
+
   function draw(time) {
 	  
 	  if (animate) {
 	  context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 	  
-	  drawBackground();
+	  background.draw(context);
+	  
+	  drawScore(context, score);
+	  
+	  base.draw(context);
 	  
 	  if (!startTime) {
 		  startTime = time;
@@ -256,34 +188,23 @@
 		  explosion.updatePosition(time);
 	  });
 	  
-	  /*
-	  aaEmplacements.forEach(function(aaEmplacement) {
-		  aaEmplacement.updatePosition(time);
+	  jetBullets.forEach(function(jetBullet) {
+		 jetBullet.updatePosition(context, time); 
 	  });
-	  */
 	  
 	  bullets.forEach(function(bullet) {
 		  bullet.updatePosition(time);
 	  });
 	  
-	  /*
-	  emps.forEach(function(emp) {
-		emp.updatePosition(time);  
+
+	  jets.forEach(function(jet) {
+		  jet.updatePosition(context, time);
 	  });
-	  */
 	  
-	 
-	  //context.beginPath();
-	 // context.arc(500, 500, 3, 0, 2 * Math.PI, true);
-	  //context.fill();
-	  
-	  detectCollissions(explosions, missiles);
+	  detectCollissions(explosions, missiles, jetBullets, jets);
 	  
       requestAnimationFrame(draw);
 
-  	// console.log("Number of explosions: " + explosions.length);
-  	 
-  	 // Clear up objects every 2 seconds.
   		  explosions = explosions.filter(function(explosion) {
   			  if (explosion.isAlive()) {
   				  return true;
@@ -298,25 +219,34 @@
   			  }
   			  return false;
   		  });
+  		  
+  		  jetBullets = jetBullets.filter(function(jetBullet) {
+  			  if (jetBullet.isAlive()) {
+  				  return true;
+  			  }
+  			  return false;
+  		  });
 	  }
   }
   
   requestAnimationFrame(draw);
   
+ function drawScore(context, score) {
+	 context.font = "20px Verdana";
+	 context.textAlign = "right";
+	 context.fillStyle = "black";
+	 context.fillText(padZeros(score, 6), 970, 30);
+ };
  
- var background;
+ function padZeros(number, length) {
+	 var numDigits = number.toString().length;
+	 var padding = "";
+	 for (var i = 0; i < length - numDigits; i++) {
+		 padding += "0";
+	 }
+	 return padding + number;
+ };
  
- function drawBackground() {
-	 if (background != null || background != undefined) {
-		 context.putImageData(background, 0, 0, context.canvas.width, context.canvas.height);
-	 } else {
-		 drawSky(context);
-		 drawGround(context);
-		 drawSun();
-	 	 background = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
-	 } 	 
- }
-
         </script>
         <footer>Footer section</footer>
     </body>
