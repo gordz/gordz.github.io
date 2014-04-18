@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
+<body>
+	<script type="text/javascript">
+		var object = {
+			a: "hello",
+			f: function() {
+				console.log("a");
+			}
+		};
+		
+		function MyObject() {
+			this.a = "hello";
+			var b = "world";
+			
+			
+			console.log("a" + a);
+			this.f = function() {
+				console.log("a: " + a);
+				console.log("a: " + a);
+			}
+		}
+		
+		var myObject = new MyObject();
+		myObject.f();
+		
+		
+		
+	</script>
+</body>
+</html>
